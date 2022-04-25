@@ -15,17 +15,40 @@
 name: Execute notebooks found in a pull request and create links to their output files
 
 on:
-  push:
+  pull_request:
     branches:
     - main
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT }}
-  REGION: us-central1	   # TODO: update to correct region
+  REGION: us-central1	                                         # TODO: update to correct Vertex AI region
+  GCS_SOURCE: ${{ secrets.GCP_PROJECT }}/ghnbr/source          # TODO: Update to a bucket with proper ACLs
+  GCS_OUTPUT: ${{ secrets.GCP_PROJECT }}/ghnbr/output          # TODO: Update to a bucket with proper ACLs 
+  VERTEX_MACHINE_TYPE: n1-standard-4                           # TODO: Update this to a larger VM if necessary
+  VERTEX_CONTAINER: gcr.io/deeplearning-platform-release/base-cu110:latest
 
 jobs:
-  setup-and-deploy:
-    name: Setup and Deploy
+
+  # JOB to run change detection
+  changes:
+    runs-on: ubuntu-latest
+    # Set job outputs to values from filter step
+    outputs:
+      notebooks: ${{ steps.filter.outputs.notebooks }}
+    steps:
+    # For pull requests it's not necessary to checkout the code
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          notebooks:
+            - 'somedir/**'
+
+  # JOB to initiate the notebook review process
+  notebook-review:
+    name: Notebook Review
+    needs: changes
+    if: ${{ needs.changes.outputs.notebooks == 'true' }}
     runs-on: ubuntu-latest
 
     # Add "id-token" with the intended permissions.
@@ -36,28 +59,57 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-      with:
-        # In order to deterimine the changed file set the action needs to see more than one level of commit history
-        fetch-depth: 2
+
+    # Look for any notebook files and copy them to a local folder
+    - stage-files:
+      env: 
+        files: '${{ needs.changes.outputs.notebooks_files }}'
+        dir: '${{ github.event.pull_request.base.sha }}'
+      run: |-
+        mkdir -p ${dir};
+        for file in ${files}; do f2=$(echo ${file}|tr '/' '_'); cp ${file} ${dir}/${f2}; done;
 
     # Configure Workload Identity Federation and generate an access token.
-    - id: 'auth'
-      name: 'Authenticate to Google Cloud'
-      uses: 'google-github-actions/auth@v0'
-      with:
-        workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider'
-        service_account: 'my-service-account@my-project.iam.gserviceaccount.com'
-
-    # Alternative option - authentication via credentials json
     # - id: 'auth'
+    #   name: 'Authenticate to Google Cloud'
     #   uses: 'google-github-actions/auth@v0'
     #   with:
-    #     credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+    #     workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider'
+    #     service_account: 'my-service-account@my-project.iam.gserviceaccount.com'
+
+    # Alternative option - authentication via credentials json
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v0'
+      with:
+        credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
 
     # Setup gcloud CLI
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v0
 
-    # Look for any notebook files and copy them to GCS
-    - run: |-
-        echo "::set-output name=notebooks::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep .ipynb$ | xargs)"
+    - id: 'upload-folder'
+      uses: 'google-github-actions/upload-cloud-storage@v0'
+      with:
+        path: '${{ github.event.pull_request.base.sha }}'
+        destination: '${{ env.GCS_SOURCE }}'
+
+    # Submit each notebook to Vertex AI to run
+    - id: 'vertex-execution'
+      env:
+        files: '${{ steps.upload-folder.outputs.uploaded }}'
+        commit_sha: '${{ github.event.pull_request.base.sha }}'
+        output_location: '${{ env.GCS_OUTPUT }}'
+      run: |-
+        for file in ${files};
+        do
+          echo ${file}
+          # job_name=ghnbr_${file};
+          # output_file="";
+          # gcloud ai custom-jobs create \
+          #   --region=${REGION} \
+          #   --display-name="${job_name}" \
+          #   --worker-pool-spec=machine-type="${VERTEX_MACHINE_TYPE}",replica-count="1",container-image-uri="${VERTEX_CONTAINER}" \
+          #   --args=nbexecutor,--input-notebook="gs://${file}",--output-notebook="${output_file}",--kernel-name=python3
+        done;
+
+
