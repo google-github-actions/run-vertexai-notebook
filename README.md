@@ -1,6 +1,8 @@
-# Notebook Review - GitHub Actions
+# Notebook Review via GitHub Actions
 
-An example workflow that uses [GitHub Actions][actions] to schedule the remote execution of any Notebook files via Vertex AI. The GitHub workflow writes a comment into the pull request with links to both the job running in Vertex AI as well as the final output files.
+An example workflow that uses [GitHub Actions][actions] to schedule the remote execution of Notebook files via Vertex AI. The GitHub workflow writes a comment into the pull request with links to both the job running in Vertex AI as well as the final output files.
+
+Notebooks executed by this workflow will fall under the [notebook executor requirements][nbexecution] defined by Vertex AI.
 
 This code is intended to be an _example_. You will likely need to change or
 update values to match your setup.
@@ -105,3 +107,4 @@ For pull requests to the `main` branch, this workflow will:
 [roles]: https://cloud.google.com/iam/docs/granting-roles-to-service-accounts#granting_access_to_a_service_account_for_a_resource
 [vertex]: https://console.cloud.google.com/flows/enableapi?apiid=aiplatform.googleapis.com
 [newrepo]: https://help.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-new-repository
+[nbexecution]: https://cloud.google.com/vertex-ai/docs/workbench/managed/executor#requirements
