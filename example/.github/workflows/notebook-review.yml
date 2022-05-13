@@ -1,0 +1,80 @@
+# Copyright 2022 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Execute notebooks found in a pull request and create links to their output files
+
+on:
+  pull_request:
+    types: [ labeled ]
+    branches:
+    - main
+
+permissions: 
+  pull-requests: 'write'
+  issues: 'write'
+  contents: write
+  id-token: 'write'
+
+env:
+  GCS_SOURCE: mybucket/ghnbr/source          # TODO: Update to a bucket with proper ACLs
+  GCS_OUTPUT: mybucket/ghnbr/output          # TODO: Update to a bucket with proper ACLs 
+
+jobs:
+
+  # JOB to run change detection and build the allowlist
+  changes:
+    if: ${{ github.event.label.name == 'notebook-review' }}
+    runs-on: ubuntu-latest
+    # Set job outputs to values from filter step
+    outputs:
+      notebooks: ${{ steps.filter.outputs.notebooks }}
+      notebooks_files: ${{ steps.filter.outputs.notebooks_files }}
+    steps:
+    # For pull requests it's not necessary to checkout the code
+    - uses: dorny/paths-filter@b2feaf19c27470162a626bd6fa8438ae5b263721
+      id: filter
+      with:
+        list-files: shell
+        filters: |
+          notebooks:
+            - 'somedir/**.ipynb'
+
+  # JOB to initiate the notebook review process
+  notebook-review:
+    name: Notebook Review
+    needs: changes
+    if: ${{ needs.changes.outputs.notebooks == 'true' }}
+    runs-on: ubuntu-latest
+
+    steps:
+    # Configure Workload Identity Federation and generate an access token.
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@b258a9f230b36c9fa86dfaa43d1906bd76399edb'
+      with:
+        workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider'
+        service_account: 'my-service-account@my-project.iam.gserviceaccount.com'
+
+    # Alternative option - authentication via credentials json
+    # - id: 'auth'
+    #   uses: 'google-github-actions/auth@b258a9f230b36c9fa86dfaa43d1906bd76399edb'
+    #   with:
+    #     credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+    - id: notebook-review
+      uses: abcxyz/vertexai-notebook-review@v0
+        with:
+          gcs-source-bucket: '${{ env.GCS_SOURCE }}'
+          gcs-output-bucket: '${{ env.GCS_OUTPUT }}'
+          allowlist: '${{ needs.changes.outputs.notebooks_files }}'
