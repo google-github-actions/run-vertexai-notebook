@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#      http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,16 +15,16 @@
 name: 'Vertex AI Notebook Review Action'
 description: 'Execute notebooks and create links to their output files'
 inputs:
-  gcs-source-bucket:
+  gcs_source_bucket:
     description: 'Google Cloud Storage bucket to store notebooks to be run by Vertex AI. e.g. <project-id>/nbr/source'
     required: true
-  gcs-output-bucket:
+  gcs_output_bucket:
     description: 'Google Cloud Storage bucket to store the results of the notebooks executed by Vertex AI. e.g. <project-id>/nbr/output'
     required: true
   allowlist:
     description: 'Comma separated list of files to run on Vertex AI. e.g. mynotebook.ipynb, somedir/**.pynb. It is expected that this is the output from an action like ```dorny/paths-filter```'
     required: true
-  vertex-machine-type:
+  vertex_machine_type:
     description: 'Type of Vertex AI machine to run notebooks on e.g. n1-standard-4'
     default: 'n1-standard-4'
   region:
@@ -57,10 +57,10 @@ runs:
         set -x;
 
         mkdir -p ${dir};
-        for file in ${allowlist}; 
-        do 
-          f2=$(echo ${file}|tr '/' '_'); 
-          cp ${file} ${dir}/${f2}; 
+        for file in ${allowlist};
+        do
+          f2=$(echo ${file}|tr '/' '_');
+          cp ${file} ${dir}/${f2};
         done;
         echo "::set-output name=notebooks::$(ls ${dir} | xargs)"
     # Setup gcloud CLI
@@ -70,7 +70,7 @@ runs:
       uses: 'google-github-actions/upload-cloud-storage@v0'
       with:
         path: './${{ github.sha }}'
-        destination: '${{ input.gcs-source-bucket }}'
+        destination: '${{ input.gcs_source_bucket }}'
         gzip: false
         headers: |-
           content-type: application/octet-stream
@@ -78,9 +78,9 @@ runs:
       env:
         notebooks: '${{ input.allowlist }}'
         commit_sha: '${{ github.sha }}'
-        output_location: 'gs://${{ input.gcs-output-bucket }}'
-        source_location: 'gs://${{ input.gcs-source-bucket }}'
-        machine_type: '${{ input.vertex-machine-type }}'
+        output_location: 'gs://${{ input.gcs_output_bucket }}'
+        source_location: 'gs://${{ input.gcs_source_bucket }}'
+        machine_type: '${{ input.vertex_machine_type }}'
       run: |-
         set -x;
         echo '{"jobs": []}' > jobs.json

@@ -1,6 +1,6 @@
 # Example Notebook Review Workflow
 
-An example workflow that uses the [Vertex Notebook Review Action][action] to schedule the remote execution of Notebook files via Vertex AI. 
+An example workflow that uses the [Vertex Notebook Review Action][action] to schedule the remote execution of Notebook files via Vertex AI.
 
 This code is intended to be an _example_. You will likely need to change or
 update values to match your setup.
@@ -42,9 +42,9 @@ For pull requests to the `main` branch with a particular label applied, this wor
 1.  Apply the label `notebook-review`
 
 1.  View the GitHub Actions Workflow by selecting the `Actions` tab at the top
-    of your repository on GitHub. 
+    of your repository on GitHub.
 
 1.  View the comment in the pull request for details on your Vertex AI job and your executed notebook.
 
-[action]: https://github.com/abcxyz/vertexai-notebook-review
+[action]: https://github.com/google-github-actions/run-vertexai-notebook
 [sdk]: https://cloud.google.com/sdk

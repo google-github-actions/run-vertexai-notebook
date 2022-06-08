@@ -1,4 +1,4 @@
-# ```vertexai-notebook-review``` GitHub Action
+# `run-vertexai-notebook` GitHub Action
 
 GitHub action to trigger an asynchronous execution of a Jupyter Notebook via [Google Cloud Vertex AI][vertex-ai].
 
@@ -55,33 +55,44 @@ This action requires Google Cloud credentials to execute gcloud commands. See [s
     steps:
     - id: 'auth'
       name: 'Authenticate to Google Cloud'
-      uses: 'google-github-actions/auth@b258a9f230b36c9fa86dfaa43d1906bd76399edb'
+      uses: 'google-github-actions/auth@v0'
       with:
         workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider'
         service_account: 'my-service-account@my-project.iam.gserviceaccount.com'
 
     - id: notebook-review
-      uses: abcxyz/vertexai-notebook-review@v1
+      uses: google-github-actions/run-vertexai-notebook@v0
         with:
-          gcs-source-bucket: '${{ env.GCS_SOURCE }}'
-          gcs-output-bucket: '${{ env.GCS_OUTPUT }}'
+          gcs_source_bucket: '${{ env.GCS_SOURCE }}'
+          gcs_output_bucket: '${{ env.GCS_OUTPUT }}'
           allowlist: '${{ needs.changes.outputs.notebooks_files }}'
 ```
 
-See a more complete example in [examples](examples/.github/workflows/notebook-review.yml)
+See a more complete example in [examples](examples/.github/workflows/notebook-review.yml).
 
 # Inputs
-gcs-source-bucket: (Required) Google Cloud Storage bucket to store notebooks to be run by Vertex AI. e.g. mygcp-bucket-0001/nbr/source. This bucket was created during setup above.
 
-gcs-output-bucket: (Required) Google Cloud Storage bucket to store the results of the notebooks executed by Vertex AI. e.g. mygcp-bucket-0001/nbr/output. This bucket was created during setup above.
+-   `gcs_source_bucket` - (Required) Google Cloud Storage bucket to store
+    notebooks to be run by Vertex AI. e.g. mygcp-bucket-0001/nbr/source. This
+    bucket was created during setup above.
 
-** Note:** It is recommended that the source and output values share the same bucket and utilize a path structure to seperate source from output. 
+-   `gcs_output_bucket` - (Required) Google Cloud Storage bucket to store the
+    results of the notebooks executed by Vertex AI. e.g.
+    mygcp-bucket-0001/nbr/output. This bucket was created during setup above.
 
-region: (Optional) Google Cloud region to execute Vertex AI jobs in. Defaults to ```us-central1```.
+    **Note:** It is recommended that the source and output values share the
+    same bucket and utilize a path structure to seperate source from output.
 
-vertex-machine-type: (Optional) Machine type to use for Vertex AI job execution. Defaults to a ```n1-standard-4``` machine shape.
+-   region: (Optional) Google Cloud region to execute Vertex AI jobs in.
+    Defaults to `us-central1`.
 
-allowlist: (Required) List of notebooks to execute. Comma separated list of files to run on Vertex AI. e.g. mynotebook.ipynb,somedir/another_notebook.pynb. It is expected that this is the output from an action like [dorny/paths-filter][path-filter].
+-   `vertex_machine_type` - (Optional) Machine type to use for Vertex AI job
+    execution. Defaults to a `n1-standard-4` machine shape.
+
+-   `allowlist` - (Required) List of notebooks to execute. Comma separated list
+    of files to run on Vertex AI. e.g.
+    mynotebook.ipynb,somedir/another_notebook.pynb. It is expected that this is
+    the output from an action like [dorny/paths-filter][path-filter].
 
 
 [bucket]: https://cloud.google.com/storage/docs/creating-buckets
@@ -93,4 +104,5 @@ allowlist: (Required) List of notebooks to execute. Comma separated list of file
 [newrepo]: https://help.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-new-repository
 [nbexecution]: https://cloud.google.com/vertex-ai/docs/workbench/managed/executor#requirements
 [path-filter]: https://github.com/dorny/paths-filter
+[create-sa]: https://cloud.google.com/iam/docs/creating-managing-service-accounts
 [setup-gcloud]: https://github.com/google-github-actions/setup-gcloud

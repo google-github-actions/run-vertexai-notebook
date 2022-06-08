@@ -20,7 +20,7 @@ on:
     branches:
     - main
 
-permissions: 
+permissions:
   pull-requests: 'write'
   issues: 'write'
   contents: write
@@ -28,7 +28,7 @@ permissions:
 
 env:
   GCS_SOURCE: mybucket/ghnbr/source          # TODO: Update to a bucket with proper ACLs
-  GCS_OUTPUT: mybucket/ghnbr/output          # TODO: Update to a bucket with proper ACLs 
+  GCS_OUTPUT: mybucket/ghnbr/output          # TODO: Update to a bucket with proper ACLs
 
 jobs:
 
@@ -73,8 +73,8 @@ jobs:
     #     credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
     - id: notebook-review
-      uses: abcxyz/vertexai-notebook-review@v0
+      uses: google-github-actions/run-vertexai-notebook@v0
         with:
-          gcs-source-bucket: '${{ env.GCS_SOURCE }}'
-          gcs-output-bucket: '${{ env.GCS_OUTPUT }}'
+          gcs_source_bucket: '${{ env.GCS_SOURCE }}'
+          gcs_output_bucket: '${{ env.GCS_OUTPUT }}'
           allowlist: '${{ needs.changes.outputs.notebooks_files }}'
