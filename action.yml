@@ -80,6 +80,7 @@ runs:
         output_location: 'gs://${{ inputs.gcs_output_bucket }}'
         source_location: 'gs://${{ inputs.gcs_source_bucket }}'
         machine_type: '${{ inputs.vertex_machine_type }}'
+        region: '${{ inputs.region }}'
       run: |-
         set -x;
         echo '{"jobs": []}' > jobs.json
