@@ -45,8 +45,6 @@ env:
 runs:
   using: 'composite'
   steps:
-    - name: 'checkout'
-      uses: 'actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b'
     # Move the files that are to be executed into a directory and rename them
     - name: 'stage-files'
       shell: 'bash'
