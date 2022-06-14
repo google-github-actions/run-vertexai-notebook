@@ -98,9 +98,11 @@ runs:
              --args=nbexecutor,--input-notebook="${source_file}",--output-notebook="${output_file}",--kernel-name=python3);
 
           echo $output | jq -c > training.json
-          jq '.jobs[.jobs | length] |= . + '$(cat training.json) jobs.json > jobs.json
+          jq '.jobs[.jobs | length] |= . + '$(cat training.json) jobs.json > jobs_new.json
+          mv jobs_new.json jobs.json
 
         done;
+        cat jobs.json
         echo "::set-output name=training_jobs::$(cat jobs.json)";
     - name: 'add-comment'
       env:
