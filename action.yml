@@ -98,6 +98,7 @@ runs:
              --args=nbexecutor,--input-notebook="${source_file}",--output-notebook="${output_file}",--kernel-name=python3);
 
           echo $output | jq -c > training.json
+          cat training.json
           jq '.jobs[.jobs | length] |= . + '$(cat training.json) jobs.json > jobs_new.json
           mv jobs_new.json jobs.json
 
