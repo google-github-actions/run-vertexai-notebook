@@ -62,8 +62,8 @@ runs:
         done;
         echo "::set-output name=notebooks::$(ls ${dir} | xargs)"
     # Setup gcloud CLI
-    # - name: 'setup-cloud-sdk'
-    #   uses: 'google-github-actions/setup-gcloud@877d4953d2c70a0ba7ef3290ae968eb24af233bb'
+    - name: 'setup-cloud-sdk'
+      uses: 'google-github-actions/setup-gcloud@877d4953d2c70a0ba7ef3290ae968eb24af233bb'
     - name: 'upload-folder'
       uses: 'google-github-actions/upload-cloud-storage@v0'
       with:
