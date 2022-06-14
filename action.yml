@@ -81,6 +81,7 @@ runs:
         source_location: 'gs://${{ inputs.gcs_source_bucket }}'
         machine_type: '${{ inputs.vertex_machine_type }}'
         region: '${{ inputs.region }}'
+        container: '${{ env.VERTEX_CONTAINER }}'
       run: |-
         set -x;
         echo '{"jobs": []}' > jobs.json
@@ -97,7 +98,7 @@ runs:
              --region=${region} \
              --display-name="${job_name}" \
              --labels=commit_sha=${commit_sha} \
-             --worker-pool-spec=machine-type="${machine_type}",replica-count="1",container-image-uri="${VERTEX_CONTAINER}" \
+             --worker-pool-spec=machine-type="${machine_type}",replica-count="1",container-image-uri="${container}" \
              --args=nbexecutor,--input-notebook="${source_file}",--output-notebook="${output_file}",--kernel-name=python3);
 
           echo $output | jq -c > training.json
