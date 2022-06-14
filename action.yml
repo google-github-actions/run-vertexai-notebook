@@ -27,16 +27,11 @@ inputs:
   vertex_machine_type:
     description: 'Type of Vertex AI machine to run notebooks on e.g. n1-standard-4'
     default: 'n1-standard-4'
+    required: false
   region:
     description: 'Google Cloud region e.g. us-central1, us-east4'
     default: 'us-central1'
-
-permissions:
-  pull-requests: 'write'
-  issues: 'write'
-  contents: write
-  id-token: 'write'
-
+    required: false
 
 runs:
   using: 'composite'
@@ -113,11 +108,15 @@ runs:
       uses: 'actions/github-script@9ac08808f993958e9de277fe43a64532a609130e'
       with:
         script: |
+          const fs = require('fs');
+
           const region = process.env.region;
           const notebookUri = process.env.vertex_notebook_uri;
           const vertexUri = process.env.vertex_job_uri;
-          const jsonStr = process.env.training_jobs;
+          //const jsonStr = process.env.training_jobs;
           const project = process.env.GCLOUD_PROJECT;
+
+          let jsonStr = fs.readFileSync('jobs.json');
 
           const data = JSON.parse(jsonStr);
           const jid_re = /\/([0-9]+)$/;
