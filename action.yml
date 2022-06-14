@@ -49,10 +49,10 @@ runs:
       uses: 'actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b'
     # Move the files that are to be executed into a directory and rename them
     - name: 'stage-files'
+      shell: 'bash'
       env:
         allowlist: '${{ inputs.allowlist }}'
         dir: './${{ github.sha }}'
-      with:
       run: |-
         set -x;
 
@@ -70,17 +70,18 @@ runs:
       uses: 'google-github-actions/upload-cloud-storage@v0'
       with:
         path: './${{ github.sha }}'
-        destination: '${{ input.gcs_source_bucket }}'
+        destination: '${{ inputs.gcs_source_bucket }}'
         gzip: false
         headers: |-
           content-type: application/octet-stream
     - name: 'vertex-execution'
+      shell: 'bash'
       env:
-        notebooks: '${{ input.allowlist }}'
+        notebooks: '${{ inputs.allowlist }}'
         commit_sha: '${{ github.sha }}'
-        output_location: 'gs://${{ input.gcs_output_bucket }}'
-        source_location: 'gs://${{ input.gcs_source_bucket }}'
-        machine_type: '${{ input.vertex_machine_type }}'
+        output_location: 'gs://${{ inputs.gcs_output_bucket }}'
+        source_location: 'gs://${{ inputs.gcs_source_bucket }}'
+        machine_type: '${{ inputs.vertex_machine_type }}'
       run: |-
         set -x;
         echo '{"jobs": []}' > jobs.json
