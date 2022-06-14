@@ -100,7 +100,7 @@ runs:
           echo $output | jq -c > training.json
           cat training.json
           jq '.jobs[.jobs | length] |= . + '$(cat training.json) jobs.json > jobs_new.json
-          jq -c jobs_new.json > jobs.json
+          cat jobs_new.json | jq -c > jobs.json
 
         done;
         cat jobs.json
