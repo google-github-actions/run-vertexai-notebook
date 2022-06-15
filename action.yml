@@ -27,32 +27,21 @@ inputs:
   vertex_machine_type:
     description: 'Type of Vertex AI machine to run notebooks on e.g. n1-standard-4'
     default: 'n1-standard-4'
+    required: false
   region:
     description: 'Google Cloud region e.g. us-central1, us-east4'
     default: 'us-central1'
-
-permissions:
-  pull-requests: 'write'
-  issues: 'write'
-  contents: write
-  id-token: 'write'
-
-env:
-  VERTEX_CONTAINER: 'gcr.io/deeplearning-platform-release/base-cu110:latest'
-  VERTEX_JOB_URI: 'https://console.cloud.google.com/vertex-ai/locations'
-  VERTEX_NOTEBOOK_URI: 'https://notebooks.cloud.google.com/view'
+    required: false
 
 runs:
   using: 'composite'
   steps:
-    - name: 'checkout'
-      uses: 'actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b'
     # Move the files that are to be executed into a directory and rename them
     - name: 'stage-files'
+      shell: 'bash'
       env:
         allowlist: '${{ inputs.allowlist }}'
         dir: './${{ github.sha }}'
-      with:
       run: |-
         set -x;
 
@@ -70,17 +59,20 @@ runs:
       uses: 'google-github-actions/upload-cloud-storage@v0'
       with:
         path: './${{ github.sha }}'
-        destination: '${{ input.gcs_source_bucket }}'
+        destination: '${{ inputs.gcs_source_bucket }}'
         gzip: false
         headers: |-
           content-type: application/octet-stream
     - name: 'vertex-execution'
+      shell: 'bash'
       env:
-        notebooks: '${{ input.allowlist }}'
+        notebooks: '${{ inputs.allowlist }}'
         commit_sha: '${{ github.sha }}'
-        output_location: 'gs://${{ input.gcs_output_bucket }}'
-        source_location: 'gs://${{ input.gcs_source_bucket }}'
-        machine_type: '${{ input.vertex_machine_type }}'
+        output_location: 'gs://${{ inputs.gcs_output_bucket }}'
+        source_location: 'gs://${{ inputs.gcs_source_bucket }}'
+        machine_type: '${{ inputs.vertex_machine_type }}'
+        region: '${{ inputs.region }}'
+        container: 'gcr.io/deeplearning-platform-release/base-cu110:latest'
       run: |-
         set -x;
         echo '{"jobs": []}' > jobs.json
@@ -97,44 +89,53 @@ runs:
              --region=${region} \
              --display-name="${job_name}" \
              --labels=commit_sha=${commit_sha} \
-             --worker-pool-spec=machine-type="${machine_type}",replica-count="1",container-image-uri="${VERTEX_CONTAINER}" \
+             --worker-pool-spec=machine-type="${machine_type}",replica-count="1",container-image-uri="${container}" \
              --args=nbexecutor,--input-notebook="${source_file}",--output-notebook="${output_file}",--kernel-name=python3);
 
           echo $output | jq -c > training.json
-          jq '.jobs[.jobs | length] |= . + '$(cat training.json) jobs.json > jobs.json
+          jq '.jobs[.jobs | length] |= . + '$(cat training.json) jobs.json > jobs_new.json
+          cat jobs_new.json | jq -c > jobs.json
 
         done;
         echo "::set-output name=training_jobs::$(cat jobs.json)";
     - name: 'add-comment'
       env:
-        training_jobs: '${{ steps.vertex-execution.outputs.training_jobs }}'
+        vertex_job_uri: 'https://console.cloud.google.com/vertex-ai/locations'
+        vertex_notebook_uri: 'https://notebooks.cloud.google.com/view'
+        region: '${{ inputs.region }}'
       uses: 'actions/github-script@9ac08808f993958e9de277fe43a64532a609130e'
       with:
         script: |
-          const region = process.env.region;
-          const notebookUri = process.env.VERTEX_NOTEBOOK_URI;
-          const vertexUri = process.env.VERTEX_JOB_URI;
-          const jsonStr = process.env.training_jobs;
-          const project = process.env.GCLOUD_PROJECT;
+          try {
+            const fs = require('fs');
 
-          const data = JSON.parse(jsonStr);
-          const jid_re = /\/([0-9]+)$/;
-          for (const ix in data.jobs) {
-            const job = data.jobs[ix];
-            const nbName = job.displayName.split(":")[1];
-            const jobId = job.name.match(jid_re)[0].replace("/", "");
-            const outFile = job.jobSpec.workerPoolSpecs[0].containerSpec.args.filter((a) => a.startsWith("--output-notebook=gs://")).map((a) => a.replace("--output-notebook=gs://", ""))[0];
-            const jobUrl = encodeURI(`${vertexUri}/${region}/training/${jobId}?project=${project}`);
-            const nbUrl = encodeURI(`${notebookUri}/${outFile}`);
-            const message = `Automatic running of notebook **${nbName}** underway.
+            const region = process.env.region;
+            const notebookUri = process.env.vertex_notebook_uri;
+            const vertexUri = process.env.vertex_job_uri;
+            const project = process.env.GCLOUD_PROJECT;
+            const jsonStr = fs.readFileSync('jobs.json');
 
-            You can review the status of the job within Vertex AI: [Job ${jobId}](${jobUrl})
+            const data = JSON.parse(jsonStr);
+            const jid_re = /\/([0-9]+)$/;
+            for (const ix in data.jobs) {
+              const job = data.jobs[ix];
+              const nbName = job.displayName.split(":")[1];
+              const jobId = job.name.match(jid_re)[0].replace("/", "");
+              const outFile = job.jobSpec.workerPoolSpecs[0].containerSpec.args.filter((a) => a.startsWith("--output-notebook=gs://")).map((a) => a.replace("--output-notebook=gs://", ""))[0];
+              const jobUrl = encodeURI(`${vertexUri}/${region}/training/${jobId}?project=${project}`);
+              const nbUrl = encodeURI(`${notebookUri}/${outFile}`);
+              const message = `Automatic running of notebook **${nbName}** underway.
 
-            Once complete the notebook with output cells will be available to view [${nbName}](${nbUrl})`;
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: message,
-            });
+              You can review the status of the job within Vertex AI: [Job ${jobId}](${jobUrl})
+
+              Once complete the notebook with output cells will be available to view [${nbName}](${nbUrl})`;
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message,
+              });
+            }
+          } catch(err) {
+            core.setFailed(`Failed to generate add comment with Vertex AI links: ${err}`);
           }
