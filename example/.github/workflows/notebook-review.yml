@@ -52,7 +52,7 @@ jobs:
 
   # JOB to initiate the notebook review process
   notebook-review:
-    name: Notebook Review
+    name: 'Notebook Review'
     needs: changes
     if: ${{ needs.changes.outputs.notebooks == 'true' }}
     runs-on: ubuntu-latest
@@ -73,8 +73,8 @@ jobs:
     #     credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
     - id: notebook-review
-      uses: google-github-actions/run-vertexai-notebook@v0
-        with:
-          gcs_source_bucket: '${{ env.GCS_SOURCE }}'
-          gcs_output_bucket: '${{ env.GCS_OUTPUT }}'
-          allowlist: '${{ needs.changes.outputs.notebooks_files }}'
+      uses: 'google-github-actions/run-vertexai-notebook@v0'
+      with:
+        gcs_source_bucket: '${{ env.GCS_SOURCE }}'
+        gcs_output_bucket: '${{ env.GCS_OUTPUT }}'
+        allowlist: '${{ needs.changes.outputs.notebooks_files }}'

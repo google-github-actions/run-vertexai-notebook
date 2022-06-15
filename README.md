@@ -1,8 +1,22 @@
 # `run-vertexai-notebook` GitHub Action
 
-GitHub action to trigger an asynchronous execution of a Jupyter Notebook via [Google Cloud Vertex AI][vertex-ai].
+GitHub composite action to trigger asynchronous execution of a Jupyter Notebook via [Google Cloud Vertex AI][vertex-ai].
 
-Notebooks executed by this action will fall under the [notebook executor requirements][nbexecution] defined by Vertex AI.
+The typical SDLC for a Jupyter Notebook includes source control of the notebook file without it's output cells. It is a best practice that notebooks should be stored this way to prevent commiting potentially sensitive data. A downside of this practice is that code reviewers will not be able to see the output while reviewing and may not be able to accurately gauge the impact of a change.
+
+The main purpose of this action is to provide a secure way to execute a notebook, store the output (outside of source control), and serve it to a reviewer with proper access controls. 
+
+This action relies on the notebook execution functionality of Google Cloud's Vertex AI to execute the notebook and store the executed notebook with output cells in Google Cloud Storage. Access to the output is controled by Google Cloud Storage ACLs.
+
+**NOTE:** *Notebooks executed by this action will fall under the [notebook executor requirements][nbexecution] defined by Vertex AI.*
+
+This action will provision cloud resources with associated costs so it is recommended that you control the usage of this action by:
+
+* Limiting the triggers of this action: e.g. on pull request with a specific label
+
+* Limiting the set of notebooks that it executes for via the `allowlist` parameter
+
+* Managing the size of the Vertex AI infrastructure via the `vertex_machine_type` parameter 
 
 # Prerequisites
 
