@@ -32,6 +32,10 @@ inputs:
     description: 'Google Cloud region e.g. us-central1, us-east4'
     default: 'us-central1'
     required: false
+  add_comment:
+    description: 'Add a comment to an open PR as the final step - defaults to "true"'
+    default: 'true'
+    required: false
 
 runs:
   using: 'composite'
@@ -103,10 +107,14 @@ runs:
         vertex_job_uri: 'https://console.cloud.google.com/vertex-ai/locations'
         vertex_notebook_uri: 'https://notebooks.cloud.google.com/view'
         region: '${{ inputs.region }}'
+        add_comment: '${{ inputs.add_comment }}'
       uses: 'actions/github-script@9ac08808f993958e9de277fe43a64532a609130e'
       with:
         script: |
           try {
+            if (process.env.add_comment.toLowerCase() !== 'true') {
+              return;
+            }
             const fs = require('fs');
 
             const region = process.env.region;

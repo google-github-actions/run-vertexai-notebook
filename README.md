@@ -108,6 +108,10 @@ See a more complete example in [examples](examples/.github/workflows/notebook-re
     mynotebook.ipynb,somedir/another_notebook.pynb. It is expected that this is
     the output from an action like [dorny/paths-filter][path-filter].
 
+-   `add_comment` - (Optional) By default the action will attempt to write a
+    comment to the open PR or issue that triggered this action. This flag allows 
+    workflows that are triggered on direct push to a branch to disable this behavior.
+
 
 [bucket]: https://cloud.google.com/storage/docs/creating-buckets
 [auth]: https://github.com/google-github-actions/auth
