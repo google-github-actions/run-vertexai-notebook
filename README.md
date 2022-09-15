@@ -112,6 +112,8 @@ See a more complete example in [examples](examples/.github/workflows/notebook-re
     comment to the open PR or issue that triggered this action. This flag allows 
     workflows that are triggered on direct push to a branch to disable this behavior.
 
+-   `kernel` - (Optional) Kernel to use as the environment for the notebook
+    when it executes. Defaults to `python3`.
 
 [bucket]: https://cloud.google.com/storage/docs/creating-buckets
 [auth]: https://github.com/google-github-actions/auth
