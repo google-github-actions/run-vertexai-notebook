@@ -115,6 +115,9 @@ See a more complete example in [examples](examples/.github/workflows/notebook-re
 -   `kernel` - (Optional) Kernel to use as the environment for the notebook
     when it executes. Defaults to `python3`.
 
+-   `vertex_container_name` - (Optional) The base container to use for the notebook 
+    execution job. Defaults to `gcr.io/deeplearning-platform-release/base-cu110:latest`
+
 [bucket]: https://cloud.google.com/storage/docs/creating-buckets
 [auth]: https://github.com/google-github-actions/auth
 [sdk]: https://cloud.google.com/sdk

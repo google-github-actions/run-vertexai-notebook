@@ -40,6 +40,10 @@ inputs:
     description: 'Notebook kernel to use for the execution environment - defaults to python3'
     default: 'python3'
     required: false
+  vertex_container_name:
+    description: 'The base container image to use. For Python: gcr.io/deeplearning-platform-release/base-cu110:latest. For R: gcr.io/deeplearning-platform-release/r-cpu.4-1:latest. Defaults to the Python container.'
+    default: 'gcr.io/deeplearning-platform-release/base-cu110:latest'
+    required: false
 
 runs:
   using: 'composite'
@@ -81,7 +85,7 @@ runs:
         machine_type: '${{ inputs.vertex_machine_type }}'
         region: '${{ inputs.region }}'
         kernel: '${{ inputs.kernel }}'
-        container: 'gcr.io/deeplearning-platform-release/base-cu110:latest'
+        container: '${{ inputs.vertex_container_name }}'
       run: |-
         set -x;
         echo '{"jobs": []}' > jobs.json
