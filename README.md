@@ -82,6 +82,21 @@ This action requires Google Cloud credentials to execute gcloud commands. See [s
           allowlist: '${{ needs.changes.outputs.notebooks_files }}'
 ```
 
+### Running `R` notebooks
+
+R requires a different base container and kernel
+
+```yaml
+    - id: notebook-review
+      uses: google-github-actions/run-vertexai-notebook@v0
+        with:
+          gcs_source_bucket: '${{ env.GCS_SOURCE }}'
+          gcs_output_bucket: '${{ env.GCS_OUTPUT }}'
+          allowlist: '${{ needs.changes.outputs.notebooks_files }}'
+          vertex_container_name: 'gcr.io/deeplearning-platform-release/r-cpu.4-1:latest' # R base container
+          kernel: 'ir' # The stock R kernel
+```
+
 See a more complete example in [examples](examples/.github/workflows/notebook-review.yml).
 
 # Inputs
@@ -112,6 +127,11 @@ See a more complete example in [examples](examples/.github/workflows/notebook-re
     comment to the open PR or issue that triggered this action. This flag allows 
     workflows that are triggered on direct push to a branch to disable this behavior.
 
+-   `kernel` - (Optional) Kernel to use as the environment for the notebook
+    when it executes. Defaults to `python3`.
+
+-   `vertex_container_name` - (Optional) The base container to use for the notebook 
+    execution job. Defaults to `gcr.io/deeplearning-platform-release/base-cu110:latest`
 
 [bucket]: https://cloud.google.com/storage/docs/creating-buckets
 [auth]: https://github.com/google-github-actions/auth

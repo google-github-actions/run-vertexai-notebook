@@ -36,6 +36,14 @@ inputs:
     description: 'Add a comment to an open PR as the final step - defaults to "true"'
     default: 'true'
     required: false
+  kernel_name:
+    description: 'Notebook kernel to use for the execution environment - defaults to python3'
+    default: 'python3'
+    required: false
+  vertex_container_name:
+    description: 'The base container image to use. Defaults to the basic Python container.'
+    default: 'gcr.io/deeplearning-platform-release/base-cu110:latest'
+    required: false
 
 runs:
   using: 'composite'
@@ -76,7 +84,8 @@ runs:
         source_location: 'gs://${{ inputs.gcs_source_bucket }}'
         machine_type: '${{ inputs.vertex_machine_type }}'
         region: '${{ inputs.region }}'
-        container: 'gcr.io/deeplearning-platform-release/base-cu110:latest'
+        kernel: '${{ inputs.kernel }}'
+        container: '${{ inputs.vertex_container_name }}'
       run: |-
         set -x;
         echo '{"jobs": []}' > jobs.json
@@ -94,7 +103,7 @@ runs:
              --display-name="${job_name}" \
              --labels=commit_sha=${commit_sha} \
              --worker-pool-spec=machine-type="${machine_type}",replica-count="1",container-image-uri="${container}" \
-             --args=nbexecutor,--input-notebook="${source_file}",--output-notebook="${output_file}",--kernel-name=python3);
+             --args=nbexecutor,--input-notebook="${source_file}",--output-notebook="${output_file}",--kernel-name="${kernel}");
 
           echo $output | jq -c > training.json
           jq '.jobs[.jobs | length] |= . + '$(cat training.json) jobs.json > jobs_new.json
