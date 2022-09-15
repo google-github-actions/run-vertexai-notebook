@@ -41,7 +41,7 @@ inputs:
     default: 'python3'
     required: false
   vertex_container_name:
-    description: 'The base container image to use. For Python: gcr.io/deeplearning-platform-release/base-cu110:latest. For R: gcr.io/deeplearning-platform-release/r-cpu.4-1:latest. Defaults to the Python container.'
+    description: 'The base container image to use. Defaults to the basic Python container.'
     default: 'gcr.io/deeplearning-platform-release/base-cu110:latest'
     required: false
 
