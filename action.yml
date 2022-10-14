@@ -63,7 +63,7 @@ runs:
           f2=$(echo ${file}|tr '/' '_');
           cp ${file} ${dir}/${f2};
         done;
-        echo "::set-output name=notebooks::$(ls ${dir} | xargs)"
+        echo "notebooks=$(ls ${dir} | xargs)" >> $GITHUB_OUTPUT
     # Setup gcloud CLI
     - name: 'setup-cloud-sdk'
       uses: 'google-github-actions/setup-gcloud@877d4953d2c70a0ba7ef3290ae968eb24af233bb'
@@ -110,7 +110,7 @@ runs:
           cat jobs_new.json | jq -c > jobs.json
 
         done;
-        echo "::set-output name=training_jobs::$(cat jobs.json)";
+        echo "name=training_jobs=$(cat jobs.json)" >> $GITHUB_OUTPUT
     - name: 'add-comment'
       env:
         vertex_job_uri: 'https://console.cloud.google.com/vertex-ai/locations'
