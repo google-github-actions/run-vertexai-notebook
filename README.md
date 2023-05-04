@@ -4,7 +4,7 @@ GitHub composite action to trigger asynchronous execution of a Jupyter Notebook 
 
 The typical SDLC for a Jupyter Notebook includes source control of the notebook file without it's output cells. It is a best practice that notebooks should be stored this way to prevent commiting potentially sensitive data. A downside of this practice is that code reviewers will not be able to see the output while reviewing and may not be able to accurately gauge the impact of a change.
 
-The main purpose of this action is to provide a secure way to execute a notebook, store the output (outside of source control), and serve it to a reviewer with proper access controls. 
+The main purpose of this action is to provide a secure way to execute a notebook, store the output (outside of source control), and serve it to a reviewer with proper access controls.
 
 This action relies on the notebook execution functionality of Google Cloud's Vertex AI to execute the notebook and store the executed notebook with output cells in Google Cloud Storage. Access to the output is controled by Google Cloud Storage ACLs.
 
@@ -16,7 +16,12 @@ This action will provision cloud resources with associated costs so it is recomm
 
 * Limiting the set of notebooks that it executes for via the `allowlist` parameter
 
-* Managing the size of the Vertex AI infrastructure via the `vertex_machine_type` parameter 
+* Managing the size of the Vertex AI infrastructure via the `vertex_machine_type` parameter
+
+**This is not an officially supported Google product, and it is not covered by a
+Google Cloud support contract. To report bugs or request features in a Google
+Cloud product, please contact [Google Cloud
+support](https://cloud.google.com/support).**
 
 # Prerequisites
 
@@ -124,13 +129,13 @@ See a more complete example in [examples](examples/.github/workflows/notebook-re
     the output from an action like [dorny/paths-filter][path-filter].
 
 -   `add_comment` - (Optional) By default the action will attempt to write a
-    comment to the open PR or issue that triggered this action. This flag allows 
+    comment to the open PR or issue that triggered this action. This flag allows
     workflows that are triggered on direct push to a branch to disable this behavior.
 
 -   `kernel` - (Optional) Kernel to use as the environment for the notebook
     when it executes. Defaults to `python3`.
 
--   `vertex_container_name` - (Optional) The base container to use for the notebook 
+-   `vertex_container_name` - (Optional) The base container to use for the notebook
     execution job. Defaults to `gcr.io/deeplearning-platform-release/base-cu110:latest`
 
 [bucket]: https://cloud.google.com/storage/docs/creating-buckets
