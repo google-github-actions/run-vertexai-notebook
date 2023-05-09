@@ -58,6 +58,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - id: 'checkout'
+      uses: 'actions/checkout@v3'
     # Configure Workload Identity Federation and generate an access token.
     - id: 'auth'
       name: 'Authenticate to Google Cloud'
