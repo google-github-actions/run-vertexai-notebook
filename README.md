@@ -99,7 +99,7 @@ R requires a different base container and kernel
           gcs_output_bucket: '${{ env.GCS_OUTPUT }}'
           allowlist: '${{ needs.changes.outputs.notebooks_files }}'
           vertex_container_name: 'gcr.io/deeplearning-platform-release/r-cpu.4-1:latest' # R base container
-          kernel: 'ir' # The stock R kernel
+          kernel_name: 'ir' # The stock R kernel
 ```
 
 See a more complete example in [examples](examples/.github/workflows/notebook-review.yml).
@@ -132,7 +132,7 @@ See a more complete example in [examples](examples/.github/workflows/notebook-re
     comment to the open PR or issue that triggered this action. This flag allows
     workflows that are triggered on direct push to a branch to disable this behavior.
 
--   `kernel` - (Optional) Kernel to use as the environment for the notebook
+-   `kernel_name` - (Optional) Kernel to use as the environment for the notebook
     when it executes. Defaults to `python3`.
 
 -   `vertex_container_name` - (Optional) The base container to use for the notebook
