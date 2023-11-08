@@ -64,9 +64,11 @@ runs:
           cp ${file} ${dir}/${f2};
         done;
         echo "notebooks=$(ls ${dir} | xargs)" >> $GITHUB_OUTPUT
+
     # Setup gcloud CLI
     - name: 'setup-cloud-sdk'
-      uses: 'google-github-actions/setup-gcloud@877d4953d2c70a0ba7ef3290ae968eb24af233bb'
+      uses: 'google-github-actions/setup-gcloud@v1'
+
     - name: 'upload-folder'
       uses: 'google-github-actions/upload-cloud-storage@v0'
       with:
@@ -75,6 +77,7 @@ runs:
         gzip: false
         headers: |-
           content-type: application/octet-stream
+
     - name: 'vertex-execution'
       shell: 'bash'
       env:
@@ -111,6 +114,7 @@ runs:
 
         done;
         echo "name=training_jobs=$(cat jobs.json)" >> $GITHUB_OUTPUT
+
     - name: 'add-comment'
       env:
         vertex_job_uri: 'https://console.cloud.google.com/vertex-ai/locations'
