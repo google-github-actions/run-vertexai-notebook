@@ -67,10 +67,10 @@ runs:
 
     # Setup gcloud CLI
     - name: 'setup-cloud-sdk'
-      uses: 'google-github-actions/setup-gcloud@v1'
+      uses: 'google-github-actions/setup-gcloud@v2' # ratchet:exclude
 
     - name: 'upload-folder'
-      uses: 'google-github-actions/upload-cloud-storage@v0'
+      uses: 'google-github-actions/upload-cloud-storage@v2' # ratchet:exclude
       with:
         path: './${{ github.sha }}'
         destination: '${{ inputs.gcs_source_bucket }}'
@@ -121,7 +121,7 @@ runs:
         vertex_notebook_uri: 'https://notebooks.cloud.google.com/view'
         region: '${{ inputs.region }}'
         add_comment: '${{ inputs.add_comment }}'
-      uses: 'actions/github-script@9ac08808f993958e9de277fe43a64532a609130e'
+      uses: 'actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea' # ratchet:actions/github-script@v7.0.1
       with:
         script: |
           try {
